@@ -28,10 +28,7 @@ repositories {
     maven("https://repo.dmulloy2.net/repository/public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
-    maven("https://repo.nexomc.com/snapshots/")
     maven("https://repo.nexomc.com/releases/")
-    maven("https://repo.papermc.io/repository/maven-public/")
-    maven("https://repo.fancyinnovations.com/releases")
     mavenLocal()
 }
 
@@ -60,16 +57,7 @@ dependencies {
     compileOnly("com.github.TownyAdvanced:Towny:0.98.3.6")
     compileOnly("com.github.Slimefun:Slimefun4:RC-37")
     compileOnly("io.lumine:Mythic-Dist:5.6.1")
-    compileOnly("com.nexomc:nexo:1.6.0")
-    compileOnly("de.oliver:FancyHolograms:2.8.0")
-    testImplementation(testFixtures(project(":common")))
-    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.108.0")
-    testImplementation("io.papermc.paper:paper-api:1.21.11-R0.1-SNAPSHOT")
-    testImplementation("org.slf4j:slf4j-simple:2.0.17")
-    testImplementation("com.mysql:mysql-connector-j:9.3.0")
-    testImplementation(platform("org.junit:junit-bom:5.13.2"))
-    testImplementation("org.junit.jupiter:junit-jupiter")
-    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+    compileOnly("com.nexomc:nexo:1.1.0")
 }
 
 val compiler = javaToolchains.compilerFor {
