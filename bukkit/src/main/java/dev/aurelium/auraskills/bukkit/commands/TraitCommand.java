@@ -11,7 +11,11 @@ import dev.aurelium.auraskills.common.message.type.CommandMessage;
 import dev.aurelium.auraskills.common.user.User;
 import dev.aurelium.auraskills.common.util.text.DurationParser;
 import dev.aurelium.auraskills.common.util.text.TextUtil;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.command.BlockCommandSender;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 
 import java.time.Duration;
@@ -30,12 +34,31 @@ public class TraitCommand extends BaseCommand {
         this.plugin = plugin;
         this.format = new StatFormat(plugin);
     }
-
+    public static Location locationFromCommandSender(CommandSender cs) {
+        return cs instanceof BlockCommandSender bcs ? bcs.getBlock().getLocation()
+                : cs instanceof Entity ecs ? ecs.getLocation() : null;
+    }
     @Subcommand("add")
     @CommandPermission("auraskills.command.modifier")
     @CommandCompletion("@players @traits @nothing @nothing @modifier_operations true true")
     @Description("%desc_trait_add")
-    public void onAdd(CommandSender sender, @Flags("other") Player player, Trait trait, String name, double value, @Default("add") Operation operation, @Default("false") boolean silent, @Default("false") boolean stack) {
+    public void onAdd(CommandSender sender, @Flags("other") String playerUsername, Trait trait, String name, double value, @Default("add") Operation operation, @Default("false") boolean silent, @Default("false") boolean stack) {
+
+        Player player = null;
+        if (!playerUsername.startsWith("@p"))
+            player = Bukkit.getPlayerExact(playerUsername);
+        else {
+            double closestInt = Double.MAX_VALUE;
+            Entity closest = null;
+            Location senderLocation = locationFromCommandSender(sender);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Location playerLocation = p.getLocation();
+                if (playerLocation.distanceSquared(senderLocation) < closestInt){
+                    closestInt = playerLocation.distanceSquared(senderLocation);
+                    player = p;
+                }
+            }
+        }
         User user = plugin.getUser(player);
         Locale locale = user.getLocale();
         TraitModifier modifier = new TraitModifier(name, trait, value, operation);
@@ -62,12 +85,27 @@ public class TraitCommand extends BaseCommand {
     @CommandPermission("auraskills.command.modifier")
     @CommandCompletion("@players @traits @nothing @nothing @nothing true|false @modifier_operations true|false true|false")
     @Description("%desc_trait_addtemp")
-    public void addTemp(CommandSender sender, @Flags("other") Player player, Trait trait, String name, double value,
+    public void addTemp(CommandSender sender, @Flags("other") String playerUsername, Trait trait, String name, double value,
                         Duration duration, @Default("false") boolean pauseOffline, @Default("add") Operation operation,
                         @Default("false") boolean silent, @Default("false") boolean stack) {
+        Player player = null;
+        if (!playerUsername.startsWith("@p"))
+            player = Bukkit.getPlayerExact(playerUsername);
+        else {
+            double closestInt = Double.MAX_VALUE;
+            Entity closest = null;
+            Location senderLocation = locationFromCommandSender(sender);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Location playerLocation = p.getLocation();
+                if (playerLocation.distanceSquared(senderLocation) < closestInt){
+                    closestInt = playerLocation.distanceSquared(senderLocation);
+                    player = p;
+                }
+            }
+        }
+
         User user = plugin.getUser(player);
         Locale locale = user.getLocale();
-
         String modifierName;
         if (!user.getTraitModifiers().containsKey(name)) {
             modifierName = name;
@@ -98,7 +136,23 @@ public class TraitCommand extends BaseCommand {
     @CommandPermission("auraskills.command.modifier")
     @CommandCompletion("@players @modifiers true")
     @Description("%desc_trait_remove")
-    public void onRemove(CommandSender sender, @Flags("other") Player player, String name, @Default("false") boolean silent) {
+    public void onRemove(CommandSender sender, @Flags("other") String playerUsername, String name, @Default("false") boolean silent) {
+        Player player = null;
+        if (!playerUsername.startsWith("@p"))
+            player = Bukkit.getPlayerExact(playerUsername);
+        else {
+            double closestInt = Double.MAX_VALUE;
+            Entity closest = null;
+            Location senderLocation = locationFromCommandSender(sender);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Location playerLocation = p.getLocation();
+                if (playerLocation.distanceSquared(senderLocation) < closestInt){
+                    closestInt = playerLocation.distanceSquared(senderLocation);
+                    player = p;
+                }
+            }
+        }
+
         User user = plugin.getUser(player);
         Locale locale = user.getLocale();
         if (user.removeTraitModifier(name)) {

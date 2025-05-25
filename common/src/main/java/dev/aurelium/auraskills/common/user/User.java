@@ -245,6 +245,8 @@ public abstract class User {
 
     public void setMana(double mana) {
         this.mana = mana;
+        if (this.mana < 0)
+            this.mana = 0;
     }
 
     public Locale getLocale() {
