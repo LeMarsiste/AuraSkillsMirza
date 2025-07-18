@@ -1,5 +1,6 @@
 package dev.aurelium.auraskills.bukkit.skills.foraging;
 
+import com.sk89q.worldedit.WorldEdit;
 import dev.aurelium.auraskills.api.mana.ManaAbilities;
 import dev.aurelium.auraskills.api.registry.NamespacedId;
 import dev.aurelium.auraskills.api.source.XpSource;
@@ -10,6 +11,7 @@ import dev.aurelium.auraskills.bukkit.source.BlockLeveler;
 import dev.aurelium.auraskills.bukkit.util.BlockFaceUtil;
 import dev.aurelium.auraskills.common.message.type.ManaAbilityMessage;
 import dev.aurelium.auraskills.common.user.User;
+import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -24,12 +26,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Treecapitator extends ReadiedManaAbility {
 
-    private final boolean GIVE_XP;
+    private final boolean giveXp;
 
     public Treecapitator(AuraSkills plugin) {
         super(plugin, ManaAbilities.TREECAPITATOR, ManaAbilityMessage.TREECAPITATOR_START, ManaAbilityMessage.TREECAPITATOR_END,
                 new String[]{"_AXE"}, new Action[]{Action.RIGHT_CLICK_AIR, Action.RIGHT_CLICK_BLOCK});
-        this.GIVE_XP = ManaAbilities.TREECAPITATOR.optionBoolean("give_xp", true);
+        this.giveXp = ManaAbilities.TREECAPITATOR.optionBoolean("give_xp", true);
     }
 
     @Override
@@ -43,10 +45,15 @@ public class Treecapitator extends ReadiedManaAbility {
     }
 
     @Override
-    protected boolean materialMatches(String checked) {
-        // Don't ready world edit axe
-        if (checked.equals("WOODEN_AXE") || checked.equals("WOOD_AXE")) {
-            if (plugin.getServer().getPluginManager().isPluginEnabled("WorldEdit")) {
+    protected boolean materialMatches(String checked, Player player) {
+        // Don't ready WorldEdit axe if WorldEdit is available and the player has permission for the wand.
+        if (plugin.getServer().getPluginManager().isPluginEnabled("WorldEdit") && player.hasPermission("worldedit.wand")) {
+            String wandItem = WorldEdit.getInstance().getConfiguration().wandItem;
+            String wandString = wandItem.contains(":") ? wandItem.split(":")[1] : wandItem;
+            Material wandMaterial = Material.matchMaterial(wandString.toUpperCase(Locale.ROOT));
+            Material checkMaterial = Material.matchMaterial(checked.toUpperCase(Locale.ROOT));
+
+            if (wandMaterial == checkMaterial) {
                 return false;
             }
         }
@@ -99,14 +106,15 @@ public class Treecapitator extends ReadiedManaAbility {
             BlockXpSource adjSource = getSource(adjacentBlock);
             boolean isTrunk = isTrunk(adjSource);
             boolean isLeaf = isLeaf(adjSource);
-            if (!isTrunk && !isLeaf && !adjacentBlock.getType().toString().equals("SHROOMLIGHT")) continue; // Check block is leaf or trunk
+            if (!isTrunk && !isLeaf && !adjacentBlock.getType().toString().equals("SHROOMLIGHT"))
+                continue; // Check block is leaf or trunk
             // Make sure block was not placed
             if (plugin.getRegionManager().isPlacedBlock(adjacentBlock)) {
                 continue;
             }
             adjacentBlock.breakNaturally();
             tree.incrementBlocksBroken();
-            if (adjSource != null && GIVE_XP) {
+            if (adjSource != null && giveXp) {
                 plugin.getLevelManager().addXp(user, manaAbility.getSkill(), adjSource, adjSource.getXp());
             }
             // Continue breaking blocks
@@ -169,7 +177,7 @@ public class Treecapitator extends ReadiedManaAbility {
         private void setMaxBlocks(XpSource source) {
             String matName = originalBlock.getType().toString();
             if (source == null && matName.contains("STRIPPED")) {
-                String[] woodNames = new String[] {"OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "DARK_OAK", "CRIMSON", "WARPED", "MANGROVE", "CHERRY"};
+                String[] woodNames = new String[]{"OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "DARK_OAK", "CRIMSON", "WARPED", "MANGROVE", "CHERRY"};
                 for (String woodName : woodNames) {
                     if (matName.contains(woodName)) {
                         if (woodName.equals("CRIMSON") || woodName.equals("WARPED")) {

@@ -25,6 +25,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class SourceLoader {
 
@@ -120,7 +121,7 @@ public class SourceLoader {
     }
 
     public boolean updateUserFile(Map<String, ConfigurationNode> embeddedSources, Map<String, ConfigurationNode> userSources,
-                               File userFile, ConfigurationNode user) throws IOException {
+            File userFile, ConfigurationNode user) throws IOException {
         String skillName = userFile.getName();
         if (skillName.contains("alchemy") || skillName.contains("agility") || skillName.contains("enchanting")) {
             return false;
@@ -164,11 +165,17 @@ public class SourceLoader {
                 for (String sourceString : tagNode.getList(String.class, new ArrayList<>())) {
                     if (sourceString.equals("*")) { // Add all sources in skill
                         sourceList.addAll(skill.getSources());
+                    } else if (sourceString.startsWith("*") || sourceString.endsWith("*")) { // Add all wildcard sources in skill
+                        sourceList.addAll(getFilteredSource(skill.getSources(), sourceString));
                     } else if (sourceString.startsWith("!")) { // Remove source if starts with !
-                        NamespacedId id = NamespacedId.fromDefault(sourceString.substring(1));
-                        XpSource source = plugin.getSkillManager().getSourceById(id);
-                        if (source != null) {
-                            sourceList.remove(source);
+                        if (sourceString.startsWith("!*") || sourceString.endsWith("*")) { // Add all wildcard sources in skill
+                            sourceList.removeAll(getFilteredSource(sourceList, sourceString));
+                        } else {
+                            NamespacedId id = NamespacedId.fromDefault(sourceString.substring(1));
+                            XpSource source = plugin.getSkillManager().getSourceById(id);
+                            if (source != null) {
+                                sourceList.remove(source);
+                            }
                         }
                     } else { // Add raw source name
                         XpSource source = plugin.getSkillManager().getSourceById(NamespacedId.fromDefault(sourceString));
@@ -191,6 +198,20 @@ public class SourceLoader {
                 fallback.put(tag, new ArrayList<>());
             }
             return fallback;
+        }
+    }
+
+    private Collection<XpSource> getFilteredSource(List<XpSource> sources, String rawFilter) {
+        String filter = rawFilter.replace("!", "").replace("*", "").toLowerCase(Locale.ROOT);
+        boolean isEndingWildcard = rawFilter.endsWith("*");
+        boolean isBeginningWildcard = rawFilter.startsWith("*") || rawFilter.startsWith("!");
+
+        if (isBeginningWildcard && !isEndingWildcard) {
+            return sources.stream().filter(source -> source.name().toLowerCase().endsWith(filter)).collect(Collectors.toList());
+        } else if (isEndingWildcard && !isBeginningWildcard) {
+            return sources.stream().filter(source -> source.name().toLowerCase().startsWith(filter)).collect(Collectors.toList());
+        } else {
+            return sources.stream().filter(source -> source.name().toLowerCase().contains(filter)).collect(Collectors.toList());
         }
     }
 
@@ -280,4 +301,5 @@ public class SourceLoader {
             }
         }
     }
+
 }

@@ -8,7 +8,7 @@ import dev.aurelium.auraskills.api.trait.TraitModifier;
 import dev.aurelium.auraskills.api.trait.Traits;
 import dev.aurelium.auraskills.api.util.AuraSkillsModifier.Operation;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
-import dev.aurelium.auraskills.bukkit.ability.AbilityImpl;
+import dev.aurelium.auraskills.bukkit.ability.BukkitAbilityImpl;
 import dev.aurelium.auraskills.bukkit.item.BukkitPotionType;
 import dev.aurelium.auraskills.bukkit.item.TraitModifiers;
 import dev.aurelium.auraskills.bukkit.util.AttributeCompat;
@@ -39,7 +39,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-public class AgilityAbilities extends AbilityImpl {
+public class AgilityAbilities extends BukkitAbilityImpl {
 
     public AgilityAbilities(AuraSkills plugin) {
         super(plugin, Abilities.LIGHT_FALL, Abilities.JUMPER, Abilities.SUGAR_RUSH, Abilities.FLEETING, Abilities.THUNDER_FALL);
@@ -51,9 +51,9 @@ public class AgilityAbilities extends AbilityImpl {
 
         if (isDisabled(ability)) return;
         if (failsChecks(player, ability)) return;
-        
+
         if (!(event.getFinalDamage() > 0.0)) return;
-        
+
         double percentReduction = getValue(ability, user);
         event.setDamage(event.getDamage() * (1 - (percentReduction / 100)));
     }
@@ -68,7 +68,8 @@ public class AgilityAbilities extends AbilityImpl {
         if (isDisabled(ability)) return;
 
         for (PotionEffect effect : event.getPotion().getEffects()) {
-            if (!effect.getType().equals(PotionEffectType.SPEED) && !CompatUtil.isEffect(effect.getType(), Set.of("jump_boost", "jump"))) continue;
+            if (!effect.getType().equals(PotionEffectType.SPEED) && !CompatUtil.isEffect(effect.getType(), Set.of("jump_boost", "jump")))
+                continue;
 
             for (LivingEntity entity : event.getAffectedEntities()) {
                 if (!(entity instanceof Player player)) continue;
@@ -167,7 +168,7 @@ public class AgilityAbilities extends AbilityImpl {
         if (isDisabled(ability)) return;
         if (failsChecks(player, ability)) return;
 
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
         if (attribute == null) return;
 
         double maxHealth = attribute.getValue();
@@ -196,7 +197,7 @@ public class AgilityAbilities extends AbilityImpl {
     }
 
     public void removeFleeting(Player player) {
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
 
         if (attribute == null) return;
 
@@ -227,7 +228,7 @@ public class AgilityAbilities extends AbilityImpl {
 
         if (failsChecks(player, ability)) return;
 
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
         if (attribute == null) return;
 
         double maxHealth = attribute.getValue();
@@ -265,7 +266,7 @@ public class AgilityAbilities extends AbilityImpl {
 
         if (failsChecks(player, ability)) return;
 
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
         if (attribute == null) return;
 
         if (player.getHealth() < getFleetingHealthRequired() * attribute.getValue()) {
@@ -351,9 +352,8 @@ public class AgilityAbilities extends AbilityImpl {
             // Adds food level to player
             if (player.getFoodLevel() < 20) {
                 player.setFoodLevel(player.getFoodLevel() + 1);
-            }
-            // Adds saturation if food is full
-            else if (player.getSaturation() < 20f) {
+            } else if (player.getSaturation() < 20f) {
+                // Adds saturation if food is full
                 player.setSaturation(player.getSaturation() + 1f);
             }
         }

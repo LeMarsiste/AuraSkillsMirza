@@ -15,8 +15,8 @@ import dev.aurelium.auraskills.api.trait.Traits;
 import dev.aurelium.auraskills.api.util.AuraSkillsModifier.Operation;
 import dev.aurelium.auraskills.api.util.NumberUtil;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
-import dev.aurelium.auraskills.bukkit.menus.util.SlateMenuHelper;
 import dev.aurelium.auraskills.bukkit.item.TraitModifiers;
+import dev.aurelium.auraskills.bukkit.menus.util.SlateMenuHelper;
 import dev.aurelium.auraskills.bukkit.util.ItemUtils;
 import dev.aurelium.auraskills.common.message.type.MenuMessage;
 import dev.aurelium.auraskills.common.source.SourceTag;
@@ -75,7 +75,7 @@ public class GatheringLuckTraits extends TraitImpl {
 
             Location location = block.getLocation().add(0.5, 0.5, 0.5);
 
-            boolean toInventory = plugin.getLootTableManager().toInventory(player.getInventory().getItemInMainHand());
+            boolean toInventory = plugin.getLootManager().toInventory(player.getInventory().getItemInMainHand());
             Cause cause = getCause(skill);
             LootDropEvent event = new LootDropEvent(player, user.toApi(), droppedItem, location, cause, toInventory);
             Bukkit.getPluginManager().callEvent(event);

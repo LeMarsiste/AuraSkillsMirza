@@ -1,6 +1,5 @@
 package dev.aurelium.auraskills.common.api.implementation;
 
-
 import dev.aurelium.auraskills.api.ability.Ability;
 import dev.aurelium.auraskills.api.mana.ManaAbility;
 import dev.aurelium.auraskills.api.skill.Skill;
@@ -254,6 +253,11 @@ public class ApiSkillsUser implements SkillsUser {
     @Override
     public void pauseActionBar(int duration, TimeUnit timeUnit) {
         plugin.getUiProvider().getActionBarManager().setPaused(user, duration, timeUnit);
+    }
+
+    @Override
+    public void sendAbilityMessage(String message) {
+        plugin.getAbilityManager().sendAbilityMessage(user, message);
     }
 
     @Override

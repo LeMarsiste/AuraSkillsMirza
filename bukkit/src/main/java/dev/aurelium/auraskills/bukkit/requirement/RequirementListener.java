@@ -43,6 +43,7 @@ public class RequirementListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST)
     public void onEquip(ArmorEquipEvent event) {
         if (event.isCancelled()) return;
+        if (plugin.getWorldManager().isInDisabledWorld(event.getPlayer().getLocation())) return;
         Player player = event.getPlayer();
         ItemStack item = event.getNewArmorPiece();
         if (item == null) {
@@ -61,8 +62,7 @@ public class RequirementListener implements Listener {
                     sendMessage(CommandMessage.ARMOR_REQUIREMENT_EQUIP, CommandMessage.ARMOR_REQUIREMENT_ENTRY, ModifierType.ARMOR, player, locale, item);
                     manager.getErrorMessageTimer().put(player.getUniqueId(), 8);
                 }
-            }
-            else {
+            } else {
                 sendMessage(CommandMessage.ARMOR_REQUIREMENT_EQUIP, CommandMessage.ARMOR_REQUIREMENT_ENTRY, ModifierType.ARMOR, player, locale, item);
                 manager.getErrorMessageTimer().put(player.getUniqueId(), 8);
             }
@@ -90,13 +90,14 @@ public class RequirementListener implements Listener {
             requirementsString.delete(requirementsString.length() - 2, requirementsString.length());
         }
 
-        player.sendMessage(plugin.getPrefix(locale) + TextUtil.replace(plugin.getMsg(baseMessage, locale)
-                , "{requirements}", requirementsString.toString()));
+        player.sendMessage(plugin.getPrefix(locale) + TextUtil.replace(plugin.getMsg(baseMessage, locale),
+                "{requirements}", requirementsString.toString()));
     }
 
-    @EventHandler(priority = EventPriority.HIGH)
+    @EventHandler(priority = EventPriority.LOWEST)
     public void onBlockBreak(BlockBreakEvent event) {
         if (event.isCancelled()) return;
+        if (plugin.getWorldManager().isInDisabledWorld(event.getPlayer().getLocation())) return;
         if (plugin.configBoolean(Option.REQUIREMENT_ITEM_PREVENT_TOOL_USE)) {
             Player player = event.getPlayer();
             ItemStack item = player.getInventory().getItemInMainHand();
@@ -111,6 +112,7 @@ public class RequirementListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onPlace(BlockPlaceEvent event) {
         if (event.isCancelled()) return;
+        if (plugin.getWorldManager().isInDisabledWorld(event.getPlayer().getLocation())) return;
         if (plugin.configBoolean(Option.REQUIREMENT_ITEM_PREVENT_BLOCK_PLACE)) {
             Player player = event.getPlayer();
             ItemStack item = event.getItemInHand();
@@ -125,16 +127,17 @@ public class RequirementListener implements Listener {
     @EventHandler(priority = EventPriority.HIGH)
     public void onHarvest(PlayerHarvestBlockEvent event) {
         if (event.isCancelled()) return;
+        if (plugin.getWorldManager().isInDisabledWorld(event.getPlayer().getLocation())) return;
 
         checkBlockRequirements(event.getPlayer(), event.getHarvestedBlock().getType(), event);
     }
-
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onAttack(EntityDamageByEntityEvent event) {
         if (event.isCancelled()) return;
         if (plugin.configBoolean(Option.REQUIREMENT_ITEM_PREVENT_WEAPON_USE)) {
             if (event.getDamager() instanceof Player player) {
+                if (plugin.getWorldManager().isInDisabledWorld(player.getLocation())) return;
                 ItemStack item = player.getInventory().getItemInMainHand();
                 if (item.getType() == Material.AIR) return;
                 checkItemRequirements(player, item, event);
@@ -147,6 +150,7 @@ public class RequirementListener implements Listener {
         if (event.isCancelled()) return;
         if (!plugin.configBoolean(Option.REQUIREMENT_ITEM_PREVENT_WEAPON_USE)) return;
         if (!(event.getEntity() instanceof Player player)) return;
+        if (plugin.getWorldManager().isInDisabledWorld(player.getLocation())) return;
 
         ItemStack item = event.getBow();
         if (item == null) return;
@@ -157,6 +161,7 @@ public class RequirementListener implements Listener {
 
     @EventHandler(priority = EventPriority.HIGH)
     public void onInteract(PlayerInteractEvent event) {
+        if (plugin.getWorldManager().isInDisabledWorld(event.getPlayer().getLocation())) return;
         if (event.useItemInHand() == Event.Result.DENY) return;
         if (!plugin.configBoolean(Option.REQUIREMENT_ITEM_PREVENT_INTERACT)) return;
 
@@ -233,4 +238,5 @@ public class RequirementListener implements Listener {
             }
         }
     }
+
 }

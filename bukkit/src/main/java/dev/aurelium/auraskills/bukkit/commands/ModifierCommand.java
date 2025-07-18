@@ -255,8 +255,7 @@ public class ModifierCommand extends BaseCommand {
                 if (stat == null) {
                     toRemove.add(key);
                     removed++;
-                }
-                else if (playerData.getStatModifiers().get(key).stat() == stat) {
+                } else if (playerData.getStatModifiers().get(key).stat() == stat) {
                     toRemove.add(key);
                     removed++;
                 }

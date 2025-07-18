@@ -1,12 +1,12 @@
 package dev.aurelium.auraskills.bukkit.skills.enchanting;
 
 import dev.aurelium.auraskills.api.ability.Abilities;
+import dev.aurelium.auraskills.api.event.skill.XpGainEvent;
 import dev.aurelium.auraskills.api.stat.StatModifier;
 import dev.aurelium.auraskills.api.stat.Stats;
-import dev.aurelium.auraskills.api.event.skill.XpGainEvent;
 import dev.aurelium.auraskills.api.util.AuraSkillsModifier.Operation;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
-import dev.aurelium.auraskills.bukkit.ability.AbilityImpl;
+import dev.aurelium.auraskills.bukkit.ability.BukkitAbilityImpl;
 import dev.aurelium.auraskills.bukkit.user.BukkitUser;
 import dev.aurelium.auraskills.bukkit.util.VersionUtils;
 import dev.aurelium.auraskills.common.scheduler.TaskRunnable;
@@ -29,8 +29,8 @@ import org.bukkit.inventory.view.AnvilView;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
-public class EnchantingAbilities extends AbilityImpl {
-    
+public class EnchantingAbilities extends BukkitAbilityImpl {
+
     public EnchantingAbilities(AuraSkills plugin) {
         super(plugin, Abilities.XP_CONVERT, Abilities.ENCHANTER, Abilities.XP_WARRIOR, Abilities.ENCHANTED_STRENGTH, Abilities.LUCKY_TABLE);
         enchantedStrength();
@@ -39,13 +39,13 @@ public class EnchantingAbilities extends AbilityImpl {
     @EventHandler
     public void xpConvert(XpGainEvent event) {
         var ability = Abilities.XP_CONVERT;
-        
+
         if (isDisabled(ability)) return;
-        
+
         if (event.isCancelled()) return;
-        
+
         Player player = event.getPlayer();
-        
+
         if (failsChecks(player, ability)) return;
 
         User user = BukkitUser.getUser(event.getUser());
@@ -90,7 +90,7 @@ public class EnchantingAbilities extends AbilityImpl {
     @SuppressWarnings("deprecation")
     private void enchantedStrength() {
         var ability = Abilities.ENCHANTED_STRENGTH;
-        String MODIFIER_NAME = "AbilityModifier-EnchantedStrength";
+        String modifierName = "AbilityModifier-EnchantedStrength";
         var task = new TaskRunnable() {
             @Override
             public void run() {
@@ -113,11 +113,11 @@ public class EnchantingAbilities extends AbilityImpl {
                             enchantCount++;
                         }
                         if (enchantCount > 0) {
-                            StatModifier modifier = new StatModifier(MODIFIER_NAME, Stats.STRENGTH, strengthPerType * enchantCount, Operation.ADD);
+                            StatModifier modifier = new StatModifier(modifierName, Stats.STRENGTH, strengthPerType * enchantCount, Operation.ADD);
                             user.addStatModifier(modifier, false);
                         }
                     } else {
-                        user.removeStatModifier(MODIFIER_NAME);
+                        user.removeStatModifier(modifierName);
                     }
                 }
             }

@@ -1,7 +1,7 @@
 package dev.aurelium.auraskills.common.api.implementation;
 
-import dev.aurelium.auraskills.api.user.UserManager;
 import dev.aurelium.auraskills.api.user.SkillsUser;
+import dev.aurelium.auraskills.api.user.UserManager;
 import dev.aurelium.auraskills.common.AuraSkillsPlugin;
 import dev.aurelium.auraskills.common.user.User;
 
@@ -34,7 +34,7 @@ public class ApiUserManager implements UserManager {
         } else {
             plugin.getScheduler().executeAsync(() -> {
                 try {
-                    plugin.getStorageProvider().load(playerId);
+                    plugin.getStorageProvider().load(playerId, null);
                     User loadedUser = plugin.getUserManager().getUser(playerId);
                     if (loadedUser != null) {
                         future.complete(new ApiSkillsUser(loadedUser));

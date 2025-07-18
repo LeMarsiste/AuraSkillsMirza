@@ -1,6 +1,7 @@
 package dev.aurelium.auraskills.bukkit.loot.context;
 
 import dev.aurelium.auraskills.api.loot.LootContext;
+import dev.aurelium.auraskills.common.loot.ContextProvider;
 import org.bukkit.entity.EntityType;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.configurate.ConfigurationNode;
@@ -27,4 +28,5 @@ public class MobContextProvider extends ContextProvider {
         }
         return contexts;
     }
+
 }

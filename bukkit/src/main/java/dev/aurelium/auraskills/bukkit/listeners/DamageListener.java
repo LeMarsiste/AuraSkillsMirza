@@ -3,8 +3,8 @@ package dev.aurelium.auraskills.bukkit.listeners;
 import dev.aurelium.auraskills.api.damage.DamageType;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
 import dev.aurelium.auraskills.bukkit.damage.DamageHandler;
-import dev.aurelium.auraskills.bukkit.damage.DamageResult;
 import dev.aurelium.auraskills.common.config.Option;
+import dev.aurelium.auraskills.common.damage.DamageResult;
 import dev.aurelium.auraskills.common.user.User;
 import org.bukkit.Material;
 import org.bukkit.entity.*;
@@ -123,4 +123,5 @@ public class DamageListener implements Listener {
         }
         return player;
     }
+
 }

@@ -9,7 +9,6 @@ import dev.aurelium.auraskills.common.user.User;
 import org.bukkit.attribute.AttributeInstance;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
-import org.bukkit.event.EventPriority;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 
 public class MovementSpeedTrait extends TraitImpl {
@@ -20,28 +19,28 @@ public class MovementSpeedTrait extends TraitImpl {
 
     @Override
     public double getBaseLevel(Player player, Trait trait) {
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MOVEMENT_SPEED);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.movementSpeed);
         if (attribute == null) {
             return 100;
         }
         double totalValue = attribute.getValue();
         // Subtract the trait value
-        double ATTRIBUTE_RATIO = 1000;
-        double baseValue = totalValue - getValue(player, trait, ATTRIBUTE_RATIO);
-        return baseValue * ATTRIBUTE_RATIO;
+        double attributeRatio = 1000;
+        double baseValue = totalValue - getValue(player, trait, attributeRatio);
+        return baseValue * attributeRatio;
     }
 
     @Override
     protected void reload(Player player, Trait trait) {
-        double WALK_SPEED_RATIO = 500;
-        double value = getValue(player, trait, WALK_SPEED_RATIO);
+        double walkSpeedRatio = 500;
+        double value = getValue(player, trait, walkSpeedRatio);
 
         if (!trait.isEnabled()) return;
         if (plugin.getWorldManager().isInDisabledWorld(player.getLocation())) {
             player.setWalkSpeed(0.2f);
             return;
         }
-        double max = trait.optionDouble("max") / WALK_SPEED_RATIO;
+        double max = trait.optionDouble("max") / walkSpeedRatio;
         if (0.2 + value > max) {
             player.setWalkSpeed((float) (max));
             return;
@@ -55,8 +54,10 @@ public class MovementSpeedTrait extends TraitImpl {
         reload(event.getPlayer(), getTraits()[0]);
     }
 
-    @EventHandler(priority = EventPriority.HIGHEST)
-    public void worldChange(PlayerChangedWorldEvent event) {
+    @Override
+    public void changeWorld(PlayerChangedWorldEvent event, Trait trait) {
+        if (!trait.equals(Traits.MOVEMENT_SPEED)) return;
+
         reload(event.getPlayer(), getTraits()[0]);
     }
 

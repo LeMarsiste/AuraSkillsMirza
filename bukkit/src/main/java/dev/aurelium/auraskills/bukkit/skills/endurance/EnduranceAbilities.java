@@ -3,7 +3,7 @@ package dev.aurelium.auraskills.bukkit.skills.endurance;
 import dev.aurelium.auraskills.api.ability.Abilities;
 import dev.aurelium.auraskills.api.event.trait.CustomRegenEvent;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
-import dev.aurelium.auraskills.bukkit.ability.AbilityImpl;
+import dev.aurelium.auraskills.bukkit.ability.BukkitAbilityImpl;
 import dev.aurelium.auraskills.bukkit.user.BukkitUser;
 import dev.aurelium.auraskills.bukkit.util.AttributeCompat;
 import dev.aurelium.auraskills.common.user.User;
@@ -14,7 +14,7 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityRegainHealthEvent;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 
-public class EnduranceAbilities extends AbilityImpl {
+public class EnduranceAbilities extends BukkitAbilityImpl {
 
     public EnduranceAbilities(AuraSkills plugin) {
         super(plugin, Abilities.ANTI_HUNGER, Abilities.RUNNER, Abilities.GOLDEN_HEAL, Abilities.RECOVERY, Abilities.MEAL_STEAL);
@@ -56,15 +56,14 @@ public class EnduranceAbilities extends AbilityImpl {
             // Applies modifier
             double modifier = getValue(ability, user) / 100;
             event.setAmount(event.getAmount() * (1 + modifier));
-        }
-        // Recovery
-        else if (event.getRegainReason().equals(EntityRegainHealthEvent.RegainReason.SATIATED)) {
+        } else if (event.getRegainReason().equals(EntityRegainHealthEvent.RegainReason.SATIATED)) {
+            // Recovery
             var ability = Abilities.RECOVERY;
 
             if (isDisabled(ability)) return;
             if (failsChecks(player, ability)) return;
             // Gets health
-            AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+            AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
             if (attribute == null) return;
 
             double currentHealth = player.getHealth();
@@ -89,7 +88,7 @@ public class EnduranceAbilities extends AbilityImpl {
 
         User user = plugin.getUser(player);
         // Gets health
-        AttributeInstance attribute = player.getAttribute(AttributeCompat.MAX_HEALTH);
+        AttributeInstance attribute = player.getAttribute(AttributeCompat.maxHealth);
         if (attribute == null) return;
 
         double currentHealth = player.getHealth();

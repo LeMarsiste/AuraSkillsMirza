@@ -29,11 +29,11 @@ public class XpRequirementsLoader {
 
     public void load() {
         ConfigurateLoader loader = new ConfigurateLoader(plugin, TypeSerializerCollection.builder().build());
-        String FILE_NAME = "xp_requirements.yml";
+        String fileName = "xp_requirements.yml";
         try {
-            loader.generateUserFile(FILE_NAME);
+            loader.generateUserFile(fileName);
 
-            ConfigurationNode config = loader.loadUserFile(FILE_NAME);
+            ConfigurationNode config = loader.loadUserFile(fileName);
 
             // Load default section
             ConfigurationNode defaultConfig = config.node("default");
@@ -47,7 +47,6 @@ public class XpRequirementsLoader {
             }
 
             // Load skill sections
-            int numLoaded = 0;
             for (Skill skill : plugin.getSkillManager().getSkillValues()) {
                 requirements.removeSkillXpRequirements(skill); // Remove to account for deleted sections
 
@@ -64,11 +63,10 @@ public class XpRequirementsLoader {
                         plugin.logger().warn("Failed to evaluate XP requirement expression for skill " + skill);
                         e.printStackTrace();
                     }
-                    numLoaded++;
                 }
             }
         } catch (IOException e) {
-            plugin.logger().warn("Failed to load " + FILE_NAME + ": " + e.getMessage());
+            plugin.logger().warn("Failed to load " + fileName + ": " + e.getMessage());
             e.printStackTrace();
         }
     }

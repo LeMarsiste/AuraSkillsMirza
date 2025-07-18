@@ -1,4 +1,3 @@
-import org.gradle.api.tasks.Copy
 import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
 
 plugins {
@@ -6,6 +5,7 @@ plugins {
     id("com.gradleup.shadow") version "8.3.5"
     id("io.papermc.hangar-publish-plugin") version "0.1.2"
     id("com.modrinth.minotaur") version "2.+"
+    id("xyz.jpenilla.run-paper") version "2.3.1"
 }
 
 java {
@@ -16,6 +16,7 @@ java {
 
 repositories {
     mavenCentral()
+    maven("https://central.sonatype.com/repository/maven-snapshots/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.aikar.co/content/groups/aikar/")
@@ -26,7 +27,9 @@ repositories {
     maven("https://repo.dmulloy2.net/repository/public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
+    maven("https://repo.nexomc.com/snapshots/")
     maven("https://repo.nexomc.com/releases/")
+    maven("https://repo.papermc.io/repository/maven-public/")
     mavenLocal()
 }
 
@@ -34,7 +37,7 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":api-bukkit"))
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
-    implementation("de.tr7zw:item-nbt-api:2.14.2-SNAPSHOT")
+    implementation("de.tr7zw:item-nbt-api:2.15.1")
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("net.kyori:adventure-text-minimessage:4.16.0")
     implementation("net.kyori:adventure-platform-bukkit:4.3.3")
@@ -53,9 +56,14 @@ dependencies {
     compileOnly("net.luckperms:api:5.4")
     compileOnly("com.github.TownyAdvanced:Towny:0.98.3.6")
     compileOnly("com.github.Slimefun:Slimefun4:RC-37")
-    compileOnly("com.mojang:authlib:1.5.25")
     compileOnly("io.lumine:Mythic-Dist:5.6.1")
-    compileOnly("com.nexomc:nexo:1.1.0")
+    compileOnly("com.nexomc:nexo:1.6.0")
+    testImplementation(testFixtures(project(":common")))
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.59.0")
+    testImplementation("org.slf4j:slf4j-simple:2.0.17")
+    testImplementation(platform("org.junit:junit-bom:5.13.2"))
+    testImplementation("org.junit.jupiter:junit-jupiter")
+    testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val compiler = javaToolchains.compilerFor {
@@ -87,7 +95,7 @@ tasks {
     }
 
     register<Copy>("copyJar") {
-        val projectVersion : String by project
+        val projectVersion: String by project
         from("build/libs/AuraSkills-${projectVersion}.jar")
         into("../build/libs")
     }
@@ -110,10 +118,20 @@ tasks {
         options.forkOptions.executable = compiler.map { it.executablePath }.get().toString()
     }
 
+    val projectVersion = project.version.toString()
+
     processResources {
         filesMatching("plugin.yml") {
-            expand("projectVersion" to project.version)
+            expand("projectVersion" to projectVersion)
         }
+    }
+
+    runServer {
+        minecraftVersion("1.21.6")
+    }
+
+    test {
+        useJUnitPlatform()
     }
 }
 
@@ -163,7 +181,13 @@ if (project.hasProperty("modrinthToken")) {
 
 fun extractChangelog(version: String): String {
     val heading = Regex.escape(version)
-    val path = if (System.getProperty("user.dir").endsWith("bukkit")) "../Changelog.md" else "Changelog.md"
+    val cwd = System.getProperty("user.dir")
+    val isInSubmodule: Boolean = project.parent
+        ?.childProjects
+        ?.keys
+        ?.any { cwd.endsWith(it) }
+        ?: false
+    val path = if (isInSubmodule) "../Changelog.md" else "Changelog.md"
 
     val fullChangelog = File(path).readText()
     val headingPattern = Regex("## $heading\\R+([\\s\\S]*?)\\R+##\\s", RegexOption.DOT_MATCHES_ALL)
@@ -172,4 +196,3 @@ fun extractChangelog(version: String): String {
     return result?.groupValues?.get(1)?.trim()
         ?: ""
 }
-
