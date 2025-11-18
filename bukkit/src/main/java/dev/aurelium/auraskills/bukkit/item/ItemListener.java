@@ -2,6 +2,7 @@ package dev.aurelium.auraskills.bukkit.item;
 
 import dev.aurelium.auraskills.api.item.ModifierType;
 import dev.aurelium.auraskills.api.skill.Multiplier;
+import com.google.common.collect.Sets;
 import dev.aurelium.auraskills.api.stat.ReloadableIdentifier;
 import dev.aurelium.auraskills.api.stat.Stat;
 import dev.aurelium.auraskills.api.stat.StatModifier;
@@ -23,7 +24,6 @@ import org.bukkit.event.player.PlayerSwapHandItemsEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
@@ -61,20 +61,28 @@ public class ItemListener implements Listener {
         if (!plugin.configBoolean(Option.MODIFIER_ITEM_ENABLE_OFF_HAND)) {
             return;
         }
+
         Player player = event.getPlayer();
         User user = plugin.getUser(player);
+        Set<ReloadableIdentifier> toReload = Sets.newConcurrentHashSet();
 
         // Get items switched
         ItemStack itemOffHand = event.getOffHandItem();
+        ItemStack itemMainHand = event.getMainHandItem();
+
+        // Unload all existing hand effects for a short time to prevent overriding effects
+        toReload.addAll(stateManager.changeItemInSlot(user, player, new ItemStack(Material.AIR), EquipmentSlot.OFF_HAND, false, false, false));
+        toReload.addAll(stateManager.changeItemInSlot(user, player, new ItemStack(Material.AIR), EquipmentSlot.HAND, false, false, false));
+
         if (itemOffHand == null) {
             itemOffHand = new ItemStack(Material.AIR);
         }
-        ItemStack itemMainHand = event.getMainHandItem();
+
         if (itemMainHand == null) {
             itemMainHand = new ItemStack(Material.AIR);
         }
 
-        Set<ReloadableIdentifier> toReload = new HashSet<>();
+        // Now that all effects are unloaded, we can reload the items which will apply the new effects without overriding each other
 
         toReload.addAll(stateManager.changeItemInSlot(user, player, itemOffHand, EquipmentSlot.OFF_HAND, false, false, false));
         toReload.addAll(stateManager.changeItemInSlot(user, player, itemMainHand, EquipmentSlot.HAND, false, false, false));

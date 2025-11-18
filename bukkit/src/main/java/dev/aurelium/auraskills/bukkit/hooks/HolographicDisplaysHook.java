@@ -1,10 +1,11 @@
 package dev.aurelium.auraskills.bukkit.hooks;
 
-import com.gmail.filoghost.holographicdisplays.api.Hologram;
-import com.gmail.filoghost.holographicdisplays.api.HologramsAPI;
 import dev.aurelium.auraskills.bukkit.AuraSkills;
 import dev.aurelium.auraskills.common.hooks.Hook;
+import me.filoghost.holographicdisplays.api.HolographicDisplaysAPI;
+import me.filoghost.holographicdisplays.api.hologram.Hologram;
 import org.bukkit.Location;
+import org.bukkit.entity.Player;
 import org.spongepowered.configurate.ConfigurationNode;
 
 import java.util.concurrent.TimeUnit;
@@ -19,14 +20,15 @@ public class HolographicDisplaysHook extends HologramsHook {
     }
 
     @Override
-    public void createHologram(Location location, String text) {
-        Hologram hologram = HologramsAPI.createHologram(plugin, location);
-        hologram.appendTextLine(text);
+    public void createHologram(Location location, String text, Player player) {
+        HolographicDisplaysAPI api = HolographicDisplaysAPI.get(plugin);
+        Hologram hologram = api.createHologram(location);
+        hologram.getLines().appendText(text);
         deleteHologram(hologram);
     }
 
     public void deleteHologram(Hologram hd) {
-        plugin.getScheduler().scheduleSync(hd::delete, 30L * 50L, TimeUnit.MILLISECONDS);
+        plugin.getScheduler().scheduleAtLocation(hd.getPosition().toLocation(), hd::delete, 30L * 50L, TimeUnit.MILLISECONDS);
     }
 
     @Override

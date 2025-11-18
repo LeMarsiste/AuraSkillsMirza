@@ -154,9 +154,7 @@ public class ConfigurateItemParser {
             parseNBT(item, config.childrenMap());
         } else if (config.getString() != null) {
             String nbtString = config.getString("nbt");
-            if (nbtString != null) {
-                parseNBTString(item, nbtString);
-            }
+            parseNBTString(item, nbtString);
         }
         return item;
     }
@@ -179,7 +177,7 @@ public class ConfigurateItemParser {
 
     @Nullable
     private ItemStack parseItemKey(String key) {
-        return plugin.getItemRegistry().getItem(NamespacedId.fromDefault(key));
+        return plugin.getItemRegistry().getItem(NamespacedId.fromDefaultWithColon(key));
     }
 
     private void parseDurability(ConfigurationNode section, ItemStack item) {
@@ -483,13 +481,17 @@ public class ConfigurateItemParser {
 
     public void parseHideTooltip(ConfigurationNode config, ItemStack item) {
         if (!config.node("hide_tooltip").virtual()) {
-            boolean hideTooltip = config.node("hide_tooltip").getBoolean();
-            ItemMeta meta = getMeta(item);
-            if (VersionUtils.isAtLeastVersion(20, 5)) {
-                meta.setHideTooltip(hideTooltip);
-            }
-            item.setItemMeta(meta);
+            parseHideTooltipNode(config.node("hide_tooltip"), item);
         }
+    }
+
+    public void parseHideTooltipNode(ConfigurationNode tooltipNode, ItemStack item) {
+        boolean hideTooltip = tooltipNode.getBoolean();
+        ItemMeta meta = getMeta(item);
+        if (VersionUtils.isAtLeastVersion(20, 5)) {
+            meta.setHideTooltip(hideTooltip);
+        }
+        item.setItemMeta(meta);
     }
 
 }

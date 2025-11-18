@@ -18,11 +18,11 @@ repositories {
     mavenCentral()
     maven("https://central.sonatype.com/repository/maven-snapshots/")
     maven("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
-    maven("https://s01.oss.sonatype.org/content/repositories/snapshots/")
     maven("https://repo.aikar.co/content/groups/aikar/")
     maven("https://repo.codemc.io/repository/maven-public/")
     maven("https://repo.extendedclip.com/content/repositories/placeholderapi/")
     maven("https://repo.helpch.at/releases")
+    maven("https://repo.tcoded.com/releases")
     maven("https://jitpack.io")
     maven("https://repo.dmulloy2.net/repository/public/")
     maven("https://mvn.lumine.io/repository/maven-public/")
@@ -30,6 +30,7 @@ repositories {
     maven("https://repo.nexomc.com/snapshots/")
     maven("https://repo.nexomc.com/releases/")
     maven("https://repo.papermc.io/repository/maven-public/")
+    maven("https://repo.fancyinnovations.com/releases")
     mavenLocal()
 }
 
@@ -37,17 +38,18 @@ dependencies {
     implementation(project(":common"))
     implementation(project(":api-bukkit"))
     implementation("co.aikar:acf-paper:0.5.1-SNAPSHOT")
-    implementation("de.tr7zw:item-nbt-api:2.15.1")
+    implementation("de.tr7zw:item-nbt-api:2.15.3")
     implementation("org.bstats:bstats-bukkit:3.0.2")
     implementation("net.kyori:adventure-text-minimessage:4.16.0")
     implementation("net.kyori:adventure-platform-bukkit:4.3.3")
+    implementation("com.tcoded:FoliaLib:0.5.1")
     compileOnly("org.jetbrains:annotations:24.1.0")
-    compileOnly("org.spigotmc:spigot-api:1.21.5-R0.1-SNAPSHOT")
+    compileOnly("org.spigotmc:spigot-api:1.21.9-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
     compileOnly("com.sk89q.worldguard:worldguard-bukkit:7.0.5") {
         exclude("org.spigotmc", "spigot-api")
     }
-    compileOnly("com.gmail.filoghost.holographicdisplays:holographicdisplays-api:2.4.9")
+    compileOnly("me.filoghost.holographicdisplays:holographicdisplays-api:3.0.5")
     compileOnly("com.github.decentsoftware-eu:decentholograms:2.5.2")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude("org.bukkit", "bukkit")
@@ -58,15 +60,22 @@ dependencies {
     compileOnly("com.github.Slimefun:Slimefun4:RC-37")
     compileOnly("io.lumine:Mythic-Dist:5.6.1")
     compileOnly("com.nexomc:nexo:1.6.0")
+    compileOnly("de.oliver:FancyHolograms:2.8.0")
     testImplementation(testFixtures(project(":common")))
     testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.59.0")
     testImplementation("org.slf4j:slf4j-simple:2.0.17")
+    testImplementation("com.mysql:mysql-connector-j:9.3.0")
     testImplementation(platform("org.junit:junit-bom:5.13.2"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 
 val compiler = javaToolchains.compilerFor {
+    languageVersion = JavaLanguageVersion.of(21)
+}
+
+val jetbrainsLauncher = javaToolchains.launcherFor {
+    vendor = JvmVendorSpec.JETBRAINS
     languageVersion = JavaLanguageVersion.of(21)
 }
 
@@ -88,6 +97,7 @@ tasks {
         relocate("net.querz", "dev.aurelium.auraskills.querz")
         relocate("com.archyx.polyglot", "dev.aurelium.auraskills.polyglot")
         relocate("org.atteo.evo.inflector", "dev.aurelium.auraskills.inflector")
+        relocate("com.tcoded.folialib", "dev.aurelium.auraskills.folialib")
 
         exclude("acf-*.properties")
 
@@ -126,8 +136,13 @@ tasks {
         }
     }
 
+    withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+        javaLauncher = jetbrainsLauncher
+        jvmArgs("-XX:+AllowEnhancedClassRedefinition")
+    }
+
     runServer {
-        minecraftVersion("1.21.6")
+        minecraftVersion("1.21.10")
     }
 
     test {

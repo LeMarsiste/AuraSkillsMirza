@@ -14,27 +14,29 @@ import java.util.Map;
 
 public class BlockSource extends Source implements BlockXpSource {
 
+    public static final int DEFAULT_MAX_BLOCKS = 100;
+
     private final String[] blocks;
+    private final int maxBlocks;
     private final BlockTriggers[] triggers;
     private final boolean checkReplace;
     private final BlockXpSourceState[] states;
     private final BlockXpSourceState[] afterStates;
     private final String stateMultiplier;
     private final SupportBlockType supportBlockType;
-    private final boolean trunk;
-    private final boolean leaf;
+    private final boolean allowBoneMeal;
 
-    public BlockSource(AuraSkillsPlugin plugin, SourceValues values, String[] blocks, BlockTriggers[] triggers, boolean checkReplace, BlockXpSourceState[] states, BlockXpSourceState[] afterStates, String stateMultiplier, SupportBlockType supportBlockType, boolean trunk, boolean leaf) {
+    public BlockSource(AuraSkillsPlugin plugin, SourceValues values, String[] blocks, int maxBlocks, BlockTriggers[] triggers, boolean checkReplace, BlockXpSourceState[] states, BlockXpSourceState[] afterStates, String stateMultiplier, SupportBlockType supportBlockType, boolean allowBoneMeal) {
         super(plugin, values);
         this.blocks = blocks;
+        this.maxBlocks = maxBlocks;
         this.triggers = triggers;
         this.checkReplace = checkReplace;
         this.states = states;
         this.afterStates = afterStates;
         this.stateMultiplier = stateMultiplier;
         this.supportBlockType = supportBlockType;
-        this.trunk = trunk;
-        this.leaf = leaf;
+        this.allowBoneMeal = allowBoneMeal;
     }
 
     @Override
@@ -45,6 +47,10 @@ public class BlockSource extends Source implements BlockXpSource {
     @Override
     public String[] getBlocks() {
         return blocks;
+    }
+
+    public int getMaxBlocks() {
+        return maxBlocks;
     }
 
     @Override
@@ -99,13 +105,8 @@ public class BlockSource extends Source implements BlockXpSource {
     }
 
     @Override
-    public boolean isTrunk() {
-        return trunk;
-    }
-
-    @Override
-    public boolean isLeaf() {
-        return leaf;
+    public boolean allowBoneMeal() {
+        return allowBoneMeal;
     }
 
     @Override

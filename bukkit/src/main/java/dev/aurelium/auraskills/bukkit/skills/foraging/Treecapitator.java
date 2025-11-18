@@ -1,6 +1,7 @@
 package dev.aurelium.auraskills.bukkit.skills.foraging;
 
 import com.sk89q.worldedit.WorldEdit;
+import dev.aurelium.auraskills.api.event.mana.ManaAbilityBlockBreakEvent;
 import dev.aurelium.auraskills.api.mana.ManaAbilities;
 import dev.aurelium.auraskills.api.registry.NamespacedId;
 import dev.aurelium.auraskills.api.source.XpSource;
@@ -10,7 +11,10 @@ import dev.aurelium.auraskills.bukkit.mana.ReadiedManaAbility;
 import dev.aurelium.auraskills.bukkit.source.BlockLeveler;
 import dev.aurelium.auraskills.bukkit.util.BlockFaceUtil;
 import dev.aurelium.auraskills.common.message.type.ManaAbilityMessage;
+import dev.aurelium.auraskills.common.source.SourceTag;
+import dev.aurelium.auraskills.common.source.type.BlockSource;
 import dev.aurelium.auraskills.common.user.User;
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.Sound;
 import org.bukkit.block.Block;
@@ -19,10 +23,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Treecapitator extends ReadiedManaAbility {
 
@@ -76,8 +82,17 @@ public class Treecapitator extends ReadiedManaAbility {
             return;
         }
 
-        BlockXpSource source = getSource(block);
-        if (isTrunk(source) || block.getType().toString().contains("STRIPPED")) {
+        if (manaAbility.optionBoolean("call_block_break_event", false) &&
+                block.hasMetadata("AureliumSkills-Treecapitator") &&
+                event.getClass() != BlockBreakEvent.class) {
+            return;
+        }
+
+        BlockXpSource source = getNonStrippedSource(block);
+        if (source == null) {
+            return;
+        }
+        if (plugin.getSkillManager().hasTag(source, SourceTag.TRUNKS)) {
             Player player = event.getPlayer();
 
             if (failsChecks(player)) return;
@@ -85,34 +100,59 @@ public class Treecapitator extends ReadiedManaAbility {
             User user = plugin.getUser(player);
 
             if (isActivated(user)) {
-                breakTree(user, block, source);
+                breakTree(player, user, block, source);
                 return;
             }
             if (isHoldingMaterial(player) && checkActivation(player)) {
-                breakTree(user, block, source);
+                breakTree(player, user, block, source);
             }
         }
     }
 
-    public void breakTree(User user, Block block, BlockXpSource source) {
-        breakBlock(user, block, new TreecapitatorTree(plugin, block, source));
+    public void breakTree(Player player, User user, Block block, BlockXpSource source) {
+        AtomicInteger taskCount = new AtomicInteger(1);
+        TreecapitatorTree tree = new TreecapitatorTree(block, source);
+        double multiplier = manaAbility.optionDouble("durability_multiplier", 0);
+
+        // Make sure the max blocks does not exceed the durability, when applicable.
+        if (manaAbility.optionBoolean("max_limit_durability", false)) {
+            tree.setMaxBlocks(getHoldingMaterialDurability(player, tree.getMaxBlocks()));
+        }
+
+        breakBlock(player, user, block, tree, taskCount, () -> {
+            taskCount.decrementAndGet();
+            if (taskCount.get() == 0) {
+                setHoldingMaterialDurability(player, tree.getBlocksBroken(), multiplier);
+            }
+        });
     }
 
-    private void breakBlock(User user, Block block, TreecapitatorTree tree) {
+    private void breakBlock(Player player, User user, Block block, TreecapitatorTree tree, AtomicInteger taskCount, Runnable onComplete) {
         if (tree.getBlocksBroken() > tree.getMaxBlocks()) {
+            onComplete.run();
             return;
         }
         for (Block adjacentBlock : BlockFaceUtil.getSurroundingBlocks(block)) {
             BlockXpSource adjSource = getSource(adjacentBlock);
-            boolean isTrunk = isTrunk(adjSource);
-            boolean isLeaf = isLeaf(adjSource);
-            if (!isTrunk && !isLeaf && !adjacentBlock.getType().toString().equals("SHROOMLIGHT"))
+            if (!plugin.getSkillManager().hasTag(adjSource, SourceTag.TREECAPITATOR_APPLICABLE))
                 continue; // Check block is leaf or trunk
             // Make sure block was not placed
             if (plugin.getRegionManager().isPlacedBlock(adjacentBlock)) {
                 continue;
             }
-            adjacentBlock.breakNaturally();
+
+            if (manaAbility.optionBoolean("call_block_break_event", false)) {
+                adjacentBlock.setMetadata("AureliumSkills-Treecapitator", new FixedMetadataValue(plugin, true));
+                ManaAbilityBlockBreakEvent event = new ManaAbilityBlockBreakEvent(adjacentBlock, player);
+                Bukkit.getPluginManager().callEvent(event);
+                if (!event.isCancelled()) {
+                    adjacentBlock.breakNaturally(player.getInventory().getItemInMainHand());
+                }
+                adjacentBlock.removeMetadata("AureliumSkills-Treecapitator", plugin);
+            } else {
+                adjacentBlock.breakNaturally();
+            }
+
             tree.incrementBlocksBroken();
             if (adjSource != null && giveXp) {
                 plugin.getLevelManager().addXp(user, manaAbility.getSkill(), adjSource, adjSource.getXp());
@@ -120,11 +160,33 @@ public class Treecapitator extends ReadiedManaAbility {
             // Continue breaking blocks
             Block originalBlock = tree.getOriginalBlock();
             if (adjacentBlock.getX() > originalBlock.getX() + 6 || adjacentBlock.getZ() > originalBlock.getZ() + 6 || adjacentBlock.getY() > originalBlock.getY() + 31) {
+                onComplete.run();
                 return;
             }
             // Break the next blocks
-            plugin.getScheduler().scheduleSync(() -> breakBlock(user, adjacentBlock, tree), 50, TimeUnit.MILLISECONDS);
+            taskCount.incrementAndGet();
+            plugin.getScheduler().scheduleAtLocation(adjacentBlock.getLocation(), () -> breakBlock(player, user, adjacentBlock, tree, taskCount, onComplete), 50, TimeUnit.MILLISECONDS);
         }
+
+        onComplete.run();
+    }
+
+    @Nullable
+    private BlockXpSource getNonStrippedSource(Block block) {
+        String target = block.getType().toString();
+        if (target.contains("STRIPPED")) {
+            String blockOrigin = target.replace("STRIPPED_", "");
+            Material newTarget = Material.matchMaterial(blockOrigin);
+            if (newTarget != null && newTarget.isBlock()) {
+                XpSource newSource = plugin.getSkillManager().getSourceById(NamespacedId.fromDefault(newTarget.toString().toLowerCase(Locale.ROOT)));
+                if (newSource instanceof BlockXpSource blockXpSource) {
+                    return blockXpSource;
+                }
+            }
+        } else {
+            return getSource(block);
+        }
+        return null;
     }
 
     @Nullable
@@ -137,23 +199,13 @@ public class Treecapitator extends ReadiedManaAbility {
         return null;
     }
 
-    private boolean isTrunk(BlockXpSource source) {
-        return source != null && source.isTrunk();
-    }
-
-    private boolean isLeaf(BlockXpSource source) {
-        return source != null && source.isLeaf();
-    }
-
     private static class TreecapitatorTree {
 
-        private final AuraSkills plugin;
         private final Block originalBlock;
         private int blocksBroken;
         private int maxBlocks;
 
-        public TreecapitatorTree(AuraSkills plugin, Block originalBlock, BlockXpSource source) {
-            this.plugin = plugin;
+        public TreecapitatorTree(Block originalBlock, BlockXpSource source) {
             this.originalBlock = originalBlock;
             setMaxBlocks(source);
         }
@@ -174,36 +226,14 @@ public class Treecapitator extends ReadiedManaAbility {
             return maxBlocks;
         }
 
-        private void setMaxBlocks(XpSource source) {
-            String matName = originalBlock.getType().toString();
-            if (source == null && matName.contains("STRIPPED")) {
-                String[] woodNames = new String[]{"OAK", "SPRUCE", "BIRCH", "JUNGLE", "ACACIA", "DARK_OAK", "CRIMSON", "WARPED", "MANGROVE", "CHERRY"};
-                for (String woodName : woodNames) {
-                    if (matName.contains(woodName)) {
-                        if (woodName.equals("CRIMSON") || woodName.equals("WARPED")) {
-                            source = plugin.getSkillManager().getSourceById(NamespacedId.fromDefault(woodName.toLowerCase(Locale.ROOT) + "_stem"));
-                        } else {
-                            source = plugin.getSkillManager().getSourceById(NamespacedId.fromDefault(woodName.toLowerCase(Locale.ROOT) + "_log"));
-                        }
-                        break;
-                    }
-                }
-            }
-            if (source != null) {
-                if (matName.contains("OAK") || matName.contains("BIRCH") || matName.contains("ACACIA") || matName.contains("CHERRY")) {
-                    maxBlocks = 100;
-                } else if (matName.contains("SPRUCE") || matName.contains("CRIMSON") || matName.contains("WARPED") || matName.contains("MANGROVE")) {
-                    maxBlocks = 125;
-                } else if (matName.contains("JUNGLE")) {
-                    maxBlocks = 220;
-                } else if (matName.contains("DARK_OAK")) {
-                    maxBlocks = 150;
-                }
-            } else {
-                maxBlocks = 100;
-            }
+        public void setMaxBlocks(int maxBlocks) {
+            this.maxBlocks = maxBlocks;
+        }
+
+        private void setMaxBlocks(BlockXpSource source) {
+            int maxBlocks = (source != null && source.getMaxBlocks() >= 1) ? source.getMaxBlocks() : BlockSource.DEFAULT_MAX_BLOCKS;
             double multiplier = ManaAbilities.TREECAPITATOR.optionDouble("max_blocks_multiplier", 1.0);
-            maxBlocks = (int) (maxBlocks * multiplier);
+            this.maxBlocks = (int) (maxBlocks * multiplier);
         }
 
     }
