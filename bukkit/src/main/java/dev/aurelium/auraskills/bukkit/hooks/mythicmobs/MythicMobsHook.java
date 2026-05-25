@@ -109,6 +109,8 @@ public class MythicMobsHook extends Hook implements Listener {
     public void onMechanicLoad(MythicMechanicLoadEvent event) {
         if (event.getMechanicName().equalsIgnoreCase("takeMana")) {
             event.register(new TakeManaMechanic(plugin, event));
+        } else if (event.getMechanicName().equalsIgnoreCase("giveMana")) {
+            event.register(new GiveManaMechanic(plugin, event));
         } else if (event.getMechanicName().equalsIgnoreCase("giveSkillXP")) {
             event.register(new GiveSkillXpMechanic(plugin, event));
         }
