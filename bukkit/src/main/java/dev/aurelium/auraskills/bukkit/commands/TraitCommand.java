@@ -85,9 +85,25 @@ public class TraitCommand extends BaseCommand {
     @CommandPermission("auraskills.command.modifier")
     @CommandCompletion("@players @traits @nothing @nothing @nothing true|false @modifier_operations true|false true|false")
     @Description("%desc_trait_addtemp")
-    public void addTemp(CommandSender sender, @Flags("other") Player player, Trait trait, String name, double value,
-            Duration duration, @Default("false") boolean pauseOffline, @Default("add") Operation operation,
-            @Default("false") boolean silent, @Default("false") boolean stack) {
+    public void addTemp(CommandSender sender, @Flags("other") String playerUsername, Trait trait, String name, double value,
+                        Duration duration, @Default("false") boolean pauseOffline, @Default("add") Operation operation,
+                        @Default("false") boolean silent, @Default("false") boolean stack) {
+        Player player = null;
+        if (!playerUsername.startsWith("@p"))
+            player = Bukkit.getPlayerExact(playerUsername);
+        else {
+            double closestInt = Double.MAX_VALUE;
+            Entity closest = null;
+            Location senderLocation = locationFromCommandSender(sender);
+            for (Player p : Bukkit.getOnlinePlayers()) {
+                Location playerLocation = p.getLocation();
+                if (playerLocation.distanceSquared(senderLocation) < closestInt){
+                    closestInt = playerLocation.distanceSquared(senderLocation);
+                    player = p;
+                }
+            }
+        }
+
         User user = plugin.getUser(player);
         Locale locale = user.getLocale();
         String modifierName;
