@@ -15,7 +15,7 @@ items:
     - '<gray>{{back_click}}'
 templates:
   stat:
-    pos: 0,8
+    pos: 0,11
     contexts:
       strength:
         material: red_stained_glass
@@ -34,6 +34,12 @@ templates:
       crit_damage:
         material: cyan_stained_glass
       speed:
+        material: white_stained_glass
+      pvp_power:
+        material: white_stained_glass
+      pvp_resilience:
+        material: white_stained_glass
+      crit_mitigation:
         material: white_stained_glass
     display_name: '{color}{stat_name}'
     lore:
@@ -98,6 +104,10 @@ templates:
         material: iron_sword
       movement_speed:
         material: sugar
+      crit_reduction_chance:
+        material: wooden_sword
+      crit_reduction_damage:
+        material: wooden_sword
     display_name: '{color}{trait_name}'
     lore:
     - '<dark_gray>{{trait}}'

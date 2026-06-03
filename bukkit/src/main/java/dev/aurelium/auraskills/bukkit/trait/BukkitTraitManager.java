@@ -41,9 +41,13 @@ public class BukkitTraitManager extends TraitManager {
         registerTraitImpl(new MaxManaTrait(plugin));
         registerTraitImpl(new DamageReductionTrait(plugin));
         registerTraitImpl(new CritChanceTrait(plugin));
+        registerTraitImpl(new CritChanceReductionTrait(plugin));
         registerTraitImpl(new CritDamageTrait(plugin));
+        registerTraitImpl(new CritDamageReductionTrait(plugin));
         registerTraitImpl(new MovementSpeedTrait(plugin));
         registerTraitImpl(new GatheringLuckTraits(plugin));
+        registerTraitImpl(new PvPDamageReductionTrait(plugin));
+        registerTraitImpl(new PvpAttackDamageTrait(plugin));
     }
 
     public void registerTraitImpl(BukkitTraitHandler bukkitTrait) {

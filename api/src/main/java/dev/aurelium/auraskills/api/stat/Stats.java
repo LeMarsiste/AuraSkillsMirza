@@ -18,7 +18,10 @@ public enum Stats implements Stat {
     TOUGHNESS,
     CRIT_CHANCE,
     CRIT_DAMAGE,
-    SPEED;
+    SPEED,
+    PVP_POWER,
+    PVP_RESILIENCE,
+    CRIT_MITIGATION;
 
     @Inject
     private StatProvider provider;

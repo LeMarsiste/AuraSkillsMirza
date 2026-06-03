@@ -10,17 +10,16 @@ import org.bukkit.entity.Player;
 import java.util.Locale;
 import java.util.Random;
 
-public class CritChanceTrait extends TraitImpl {
+public class CritChanceReductionTrait extends TraitImpl {
 
-    private final Random rand = new Random();
 
-    CritChanceTrait(AuraSkills plugin) {
-        super(plugin, Traits.CRIT_CHANCE);
+    CritChanceReductionTrait(AuraSkills plugin) {
+        super(plugin, Traits.CRIT_CHANCE_REDUCTION);
     }
 
     @Override
     public double getBaseLevel(Player player, Trait trait) {
-        return Traits.CRIT_CHANCE.optionDouble("base");
+        return Traits.CRIT_CHANCE_REDUCTION.optionDouble("base");
     }
 
     @Override
@@ -28,8 +27,5 @@ public class CritChanceTrait extends TraitImpl {
         return NumberUtil.format1(value) + "%";
     }
 
-    public boolean isCrit(User user, User defender) {
-        return rand.nextDouble() < ((user.getEffectiveTraitLevel(Traits.CRIT_CHANCE)-defender.getEffectiveTraitLevel(Traits.CRIT_CHANCE_REDUCTION)) / 100);
-    }
 
 }

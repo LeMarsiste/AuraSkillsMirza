@@ -29,6 +29,7 @@ repositories {
     maven("https://mvn.lumine.io/repository/maven-public/")
     maven("https://maven.enginehub.org/repo/")
     maven("https://repo.nexomc.com/releases/")
+    maven("https://repo.fancyinnovations.com/releases")
     mavenLocal()
 }
 
@@ -41,6 +42,7 @@ dependencies {
     implementation("net.kyori:adventure-text-minimessage:4.25.0")
     implementation("net.kyori:adventure-platform-bukkit:4.4.1")
     implementation("com.tcoded:FoliaLib:0.5.1")
+    testImplementation("org.mockbukkit.mockbukkit:mockbukkit-v1.21:4.0.0")
     compileOnly("org.jetbrains:annotations:24.1.0")
     compileOnly("org.spigotmc:spigot-api:26.1-R0.1-SNAPSHOT")
     compileOnly("me.clip:placeholderapi:2.11.6")
@@ -49,6 +51,7 @@ dependencies {
     }
     compileOnly("me.filoghost.holographicdisplays:holographicdisplays-api:3.0.5")
     compileOnly("com.github.decentsoftware-eu:decentholograms:2.5.2")
+    compileOnly("de.oliver:FancyHolograms:2.9.1")
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         exclude("org.bukkit", "bukkit")
     }

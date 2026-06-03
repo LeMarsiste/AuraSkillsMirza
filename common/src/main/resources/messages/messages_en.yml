@@ -994,6 +994,15 @@ stats:
   speed:
     name: Speed
     desc: "Speed increases how fast you can walk and run."
+  pvp_power:
+    name: PvP Power
+    desc: "Speed increases how fast you can walk and run."
+  pvp_resilience:
+    name: PvP Resilience
+    desc: "Speed increases how fast you can walk and run."
+  crit_mitigation:
+    name: Crit Mitigation
+    desc: "Speed increases how fast you can walk and run."
 traits:
   attack_damage:
     name: Attack Damage
@@ -1019,8 +1028,12 @@ traits:
     name: Damage Reduction
   crit_chance:
     name: Crit Chance
+  crit_chance_reduction:
+    name: Crit Chance Reduction
   crit_damage:
     name: Crit Damage
+  crit_damage_reduction:
+    name: Crit Damage Reduction
   movement_speed:
     name: Movement Speed
   farming_luck:

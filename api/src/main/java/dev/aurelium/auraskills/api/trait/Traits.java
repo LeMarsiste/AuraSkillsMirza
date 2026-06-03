@@ -27,7 +27,11 @@ public enum Traits implements Trait {
     DAMAGE_REDUCTION,
     CRIT_CHANCE,
     CRIT_DAMAGE,
-    MOVEMENT_SPEED;
+    MOVEMENT_SPEED,
+    PVP_ATTACK_DAMAGE,
+    PVP_DAMAGE_REDUCTION,
+    CRIT_CHANCE_REDUCTION,
+    CRIT_DAMAGE_REDUCTION;
 
     @Inject
     private TraitProvider provider;

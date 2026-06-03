@@ -60,6 +60,23 @@ stats:
     traits:
       auraskills/movement_speed:
         modifier: 1
+  auraskills/pvp_power:
+    enabled: true
+    traits:
+      auraskills/crit_damage:
+        modifier: 1
+  auraskills/pvp_resilience:
+    enabled: true
+    traits:
+      auraskills/crit_damage:
+        modifier: 1
+  auraskills/crit_mitigation:
+    enabled: true
+    traits:
+      auraskills/crit_chance_reduction:
+        modifier: 0.1
+      auraskills/crit_damage_reduction:
+        modifier: 0.15
 traits:
   auraskills/attack_damage:
     enabled: true
@@ -125,7 +142,13 @@ traits:
   auraskills/crit_chance:
     enabled: true
     base: 0
+  auraskills/crit_chance_reduction:
+    enabled: true
+    base: 0
   auraskills/crit_damage:
+    enabled: true
+    base: 0
+  auraskills/crit_damage_reduction:
     enabled: true
     base: 0
   auraskills/movement_speed:
