@@ -31,5 +31,7 @@ public class CritChanceTrait extends TraitImpl {
     public boolean isCrit(User user, User defender) {
         return rand.nextDouble() < ((user.getEffectiveTraitLevel(Traits.CRIT_CHANCE)-defender.getEffectiveTraitLevel(Traits.CRIT_CHANCE_REDUCTION)) / 100);
     }
-
+    public boolean isCrit(User user) {
+        return rand.nextDouble() < ((user.getEffectiveTraitLevel(Traits.CRIT_CHANCE)) / 100);
+    }
 }

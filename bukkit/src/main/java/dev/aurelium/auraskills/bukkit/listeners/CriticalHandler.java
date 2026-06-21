@@ -31,9 +31,15 @@ public class CriticalHandler implements Listener {
 
         if (attacker != null &&
                 plugin.configBoolean(Option.valueOf("CRITICAL_ENABLED_" + event.getDamageMeta().getDamageType().name()))) {
-            User user = plugin.getUser(attacker);
-            User defender = plugin.getUser(target);
-            meta.addAttackModifier(getCrit(attacker, user,defender));
+            if (target == null){
+                User user = plugin.getUser(attacker);
+                meta.addAttackModifier(getCrit(attacker, user));
+            }
+            else{
+                User user = plugin.getUser(attacker);
+                User defender = plugin.getUser(target);
+                meta.addAttackModifier(getCrit(attacker,user,defender));
+            }
         }
     }
 
@@ -48,9 +54,23 @@ public class CriticalHandler implements Listener {
         double value = (user.getEffectiveTraitLevel(Traits.CRIT_DAMAGE)-defender.getEffectiveTraitLevel(Traits.CRIT_DAMAGE_REDUCTION)) / 100;
         return new DamageModifier(value, DamageModifier.Operation.ADD_COMBINED);
     }
+    private DamageModifier getCrit(Player player, User user) {
+        if (!isCrit(user)) {
+            return DamageModifier.none();
+        }
+        // Set metadata for holograms to detect
+        player.setMetadata("skillsCritical", new FixedMetadataValue(plugin, true));
+        plugin.getScheduler().scheduleAtEntity(player, () -> player.removeMetadata("skillsCritical", plugin), 50, TimeUnit.MILLISECONDS);
+
+        double value = (user.getEffectiveTraitLevel(Traits.CRIT_DAMAGE)) / 100;
+        return new DamageModifier(value, DamageModifier.Operation.ADD_COMBINED);
+    }
 
     private boolean isCrit(User defender,User user) {
         return plugin.getTraitManager().getTraitImpl(CritChanceTrait.class).isCrit(user,defender);
+    }
+    private boolean isCrit(User user) {
+        return plugin.getTraitManager().getTraitImpl(CritChanceTrait.class).isCrit(user);
     }
 
 }

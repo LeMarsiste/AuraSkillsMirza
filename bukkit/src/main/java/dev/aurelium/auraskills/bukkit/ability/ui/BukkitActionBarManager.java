@@ -1,4 +1,4 @@
-package dev.aurelium.auraskills.bukkit.ui;
+package dev.aurelium.auraskills.bukkit.ability.ui;
 
 import dev.aurelium.auraskills.api.trait.Traits;
 import dev.aurelium.auraskills.bukkit.user.BukkitUser;

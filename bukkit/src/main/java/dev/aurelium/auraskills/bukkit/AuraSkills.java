@@ -50,7 +50,7 @@ import dev.aurelium.auraskills.bukkit.scheduler.BukkitScheduler;
 import dev.aurelium.auraskills.bukkit.stat.BukkitStatManager;
 import dev.aurelium.auraskills.bukkit.storage.BukkitStorageFactory;
 import dev.aurelium.auraskills.bukkit.trait.BukkitTraitManager;
-import dev.aurelium.auraskills.bukkit.ui.BukkitUiProvider;
+import dev.aurelium.auraskills.bukkit.ability.ui.BukkitUiProvider;
 import dev.aurelium.auraskills.bukkit.user.BukkitUser;
 import dev.aurelium.auraskills.bukkit.user.BukkitUserManager;
 import dev.aurelium.auraskills.bukkit.util.BukkitPlatformUtil;
